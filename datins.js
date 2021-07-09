@@ -213,7 +213,7 @@ async function insTemp() {
           });
         }
         let ii = 31 ;
-        for (let ij = 0; ij < 8 ; ij++ ) {
+        for (let ij = 0; ij < 24 ; ij++ ) {
           await  client.readInputRegisters(ij*5+65, 5)
           .then ( (d) => {
             rtags = new Uint16Array(d.data);
