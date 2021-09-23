@@ -17,7 +17,7 @@ app.use(express.json()) ;
 
 const mysql_dbc = require('./db/db_con')();
 let con = mysql_dbc.init();
-mysql_dbc.test_open(con);
+// mysql_dbc.test_open(con);
 con.isconn = true ;
 
 
@@ -221,10 +221,14 @@ async function insTemp() {
             if (sAct[ii+1] != undefined )
               if (sAct[ii+1][0] == 2)
                  motearr.push( [PLACE, sAct[ii+1][2], sAct[ii+1][3], ii+1, 2, tm, rtags[0] / 100.0 , rtags[1]/100.0 , rtags[2]/100.0, rtags[3]/100.0, rtags[4] ]) ;
-              else {
+              else if (sAct[ii+1][2] ) {
+                
                 con.query("SELECT seq, place, act FROM motestatus where seq = ? and gubun = 'S' and spare = 'N' and place = ? ",[ ii+1 , PLACE ],
                   (err, dt) => {
-                    if (!err && dt.length > 0) motearr.push( [PLACE, sAct[ii+1][2], sAct[ii+1][3], dt[0].seq, 0 , tm, 0,0,0,0,0 ]) ;
+                    if (!err && dt.length > 0 && sAct[ii+1][2]) {
+                      // console.log( "**", sAct[ii+1][2] , sAct[ii+1][3]) ;
+                      motearr.push( [PLACE, sAct[ii+1][2], sAct[ii+1][3], dt[0].seq, 0 , tm, 0,0,0,0,0 ]) ;
+                    }
                 });
                }
           })
@@ -245,8 +249,8 @@ async function insTemp() {
        (err, res) => {
                         if(err) {
                           console.log("update lastime :"+ err);
-                          con.end() ;
-                          con.isconn = false ;
+                          // con.end() ;
+                          // con.isconn = false ;
                         }
                     }
        );
@@ -312,6 +316,6 @@ async function main2_loop() {
 process.on('uncaughtException', function (err) {
 	//예상치 못한 예외 처리
 	console.error('uncaughtException 발생 : ' + err.stack);
-  con.end() ;
-  con.isconn = false ;
+  // con.end() ;
+  // con.isconn = false ;
 });
