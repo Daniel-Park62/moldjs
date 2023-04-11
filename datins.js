@@ -4,7 +4,7 @@ let SSNUM = 6 ;
 const TAGPORT = 1502;
 const DEVPORT = 1503;
 
-let GWIP = process.env.GWIP || "192.168.0.233" ;
+let GWIP = process.env.GWIP || "192.168.0.223" ;
 let port = process.env.RESTPORT || 9977 ;
 let PLACE = process.env.PLACE || 0 ;  // 0.공장  1.수리장
 console.info( "GateWay :" + GWIP , "PLACE : " + PLACE );
@@ -178,7 +178,7 @@ function getDevs() {
 
 }
 
-async function insTemp() {
+function insTemp() {
 
   let rtags = new Uint16Array(5) ;
   client.close();
@@ -212,21 +212,21 @@ async function insTemp() {
             console.info(e);
           });
         }
-        let ii = 31 ;
-        for (let ij = 0; ij < 24 ; ij++ ) {
+        
+        for (let ii = 31 ,ij = 0; ij < 24 ; ij++ ) {
           await  client.readInputRegisters(ij*5+65, 5)
           .then ( (d) => {
             rtags = new Uint16Array(d.data);
             ii++ ;
-            if (sAct[ii+1] != undefined )
+            if ( sAct[ii+1] != undefined )
               if (sAct[ii+1][0] == 2)
                  motearr.push( [PLACE, sAct[ii+1][2], sAct[ii+1][3], ii+1, 2, tm, rtags[0] / 100.0 , rtags[1]/100.0 , rtags[2]/100.0, rtags[3]/100.0, rtags[4] ]) ;
-              else if (sAct[ii+1][2] ) {
+              else if (sAct[ii+1] != undefined && sAct[ii+1][2] ) {
                 
                 con.query("SELECT seq, place, act FROM motestatus where seq = ? and gubun = 'S' and spare = 'N' and place = ? ",[ ii+1 , PLACE ],
                   (err, dt) => {
+                    // console.log( "**", sAct[ii+1], ii) ;
                     if (!err && dt.length > 0 && sAct[ii+1][2]) {
-                      // console.log( "**", sAct[ii+1][2] , sAct[ii+1][3]) ;
                       motearr.push( [PLACE, sAct[ii+1][2], sAct[ii+1][3], dt[0].seq, 0 , tm, 0,0,0,0,0 ]) ;
                     }
                 });
@@ -294,7 +294,7 @@ setInterval(() => {
 async function main_loop() {
   // console.info(nextt) ;
   // let tm1 = moment();
-  insTemp() ;
+  setTimeout(insTemp,0) ;
   await sleep(2000) ;
   csec =  moment().get('second') ;
   nextt = moment( moment().set({'second': Math.ceil( csec / MEAS ) * MEAS, 'millisecond':0 }) );
